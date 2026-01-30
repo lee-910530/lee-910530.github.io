@@ -137,18 +137,61 @@ def get_publications_html():
         s+= get_paper_entry(k, bib_data.entries[k])
     return s
 
-def get_talks_html():
-    parser = bibtex.Parser()
-    bib_data = parser.parse_file('talk_list.bib')
-    keys = bib_data.entries.keys()
+def get_projects_data():
+    """回傳專案列表，每項可含：title, description, img, link, code 等"""
+    return [
+        # 範例：{'title': '專案名稱', 'description': '簡述', 'img': 'assets/img/xxx.png', 'link': 'https://...', 'code': 'https://github.com/...'},
+    ]
+
+def get_projects_html():
+    projects = get_projects_data()
+    if not projects:
+        return "<p>暫無專案。</p>"
     s = ""
-    for k in keys:
-        s+= get_talk_entry(k, bib_data.entries[k])
+    for p in projects:
+        s += """<div style="margin-bottom: 3em;"> <div class="row"><div class="col-sm-3">"""
+        if p.get('img'):
+            s += f"""<img src="{p['img']}" class="img-fluid img-thumbnail" alt="Project">"""
+        s += """</div><div class="col-sm-9">"""
+        if p.get('link'):
+            s += f"""<a href="{p['link']}" target="_blank">{p.get('title', '')}</a><br>"""
+        else:
+            s += f"""<span style="font-weight: bold;">{p.get('title', '')}</span><br>"""
+        if p.get('description'):
+            s += f"""{p['description']}<br>"""
+        if p.get('code'):
+            s += f"""<a href="{p['code']}" target="_blank">Code</a>"""
+        s += """ </div> </div> </div>"""
+    return s
+
+def get_awards_data():
+    """回傳獎項列表，每項可含：title, org, year, description"""
+    return [
+        # 範例：{'title': '獎項名稱', 'org': '主辦單位', 'year': '2024', 'description': '簡述'},
+    ]
+
+def get_awards_html():
+    awards = get_awards_data()
+    if not awards:
+        return "<p>暫無獎項。</p>"
+    s = ""
+    for a in awards:
+        s += """<div style="margin-bottom: 2em;">"""
+        s += f"""<span style="font-weight: bold;">{a.get('title', '')}</span>"""
+        parts = [a.get('org', ''), a.get('year', '')]
+        parts = [x for x in parts if x]
+        if parts:
+            s += f""" &ndash; <span style="font-style: italic;">{', '.join(parts)}</span>"""
+        s += "<br>"
+        if a.get('description'):
+            s += f"""{a['description']}<br>"""
+        s += """</div>"""
     return s
 
 def get_index_html():
     pub = get_publications_html()
-    talks = get_talks_html()
+    projects = get_projects_html()
+    awards = get_awards_html()
     name, bio_text, footer = get_personal_data()
     s = f"""
     <!doctype html>
@@ -191,9 +234,16 @@ def get_index_html():
         </div>
         <div class="row" style="margin-top: 3em;">
             <div class="col-sm-12" style="">
-                <h4>Selected Talks</h4>
+                <h4>Projects</h4>
                 <hr>
-                {talks}
+                {projects}
+            </div>
+        </div>
+        <div class="row" style="margin-top: 3em;">
+            <div class="col-sm-12" style="">
+                <h4>Awards</h4>
+                <hr>
+                {awards}
             </div>
         </div>
         <div class="row" style="margin-top: 3em; margin-bottom: 1em;">
